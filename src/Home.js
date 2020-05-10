@@ -70,6 +70,7 @@ class Home extends Component {
     this.onChangeSource = this.onChangeSource.bind(this);
     this.onChangeDestination = this.onChangeDestination.bind(this);
     this.book = this.book.bind(this);
+    this.reset = this.reset.bind(this);
 
     // if (navigator.geolocation) {
 
@@ -119,7 +120,22 @@ class Home extends Component {
         });
       });
     }
-
+  }
+  reset() {
+    axios.get(`http://localhost:9002/cabs/reset`).then((res) => {
+      if (res.data.success) {
+        this.setState({
+          myLoc: {},
+          cab: {},
+          cabs: this.state.pinkCabsOnly ? res.data.cabs.filter((cab) => {
+            return cab.color === 'Pink';
+          }) : res.data.cabs,
+          sourceAddress: '',
+          destinationAddress: '',
+          distance: null
+        });
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -130,7 +146,7 @@ class Home extends Component {
     return (
       <Wrapper>
         Click on the map to set your current location and destination. Map will show you your nearest Cab info.
-        Click on Book to book the nearest cab.
+        Click on Book to book the nearest cab. <button onClick={this.reset}>Reset All Cabs</button>
         <List>
           <ListItem>
             <strong>From:</strong> {this.state.sourceAddress}
