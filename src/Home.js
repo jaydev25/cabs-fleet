@@ -6,6 +6,7 @@ import GoogleMapsContainer from './components/Map';
 import { Component } from 'react/cjs/react.production.min';
 import axios from 'axios';
 import ToggleButton from 'react-toggle-button'
+import Axios from 'axios-observable';
 
 const Wrapper = styled.div`
   display: flex;
@@ -61,8 +62,10 @@ class Home extends Component {
     sourceAddress: '',
     destinationAddress: '',
     distance: null,
-    pinkCabsOnly: false
+    pinkCabsOnly: false,
+    bookedCab: null
   };
+  eventSource;
   constructor(props) {
     super(props);
 
@@ -110,6 +113,21 @@ class Home extends Component {
       axios.post(`http://localhost:9002/cab/book/${this.state.cab.id}`).then((res) => {
         if (res.data.success) {
           alert('Booked!!!');
+          const cab = this.state.cab;
+          this.eventSource = new EventSource(`http://localhost:9002/cab/subscribe/${this.state.cab.id}`);
+          this.eventSource.addEventListener("CabLocationUpdate", (e) =>  {
+            console.log(e.data)
+            cab.location = JSON.parse(e.data);
+            this.setState({
+              cab: cab,
+              bookedCab: cab
+            });
+          });
+          // Axios.get()
+          //   .subscribe(
+          //     response => console.log('>>>>>>>>>>>>>>>>>>>>>>>>>', response),
+          //     error => console.log(error)
+          //   );
         } else {
           alert('Cab Already Booked, Book Another Cab');
         }
@@ -120,6 +138,9 @@ class Home extends Component {
         });
       });
     }
+  }
+  componentDidMount() {
+    
   }
   reset() {
     axios.get(`http://localhost:9002/cabs/reset`).then((res) => {
@@ -161,6 +182,7 @@ class Home extends Component {
             {`Phone Number: ${this.state.cab && this.state.cab.phoneNumber ? this.state.cab.phoneNumber : ''}`}
           </ListItem>
           <ListItem>
+            <strong>{`Current Location: ${this.state.cab && this.state.cab.location ? (this.state.cab.location.lat + ', ' + this.state.cab.location.lng) : ''}`}</strong> |
             {`Distance: ${this.state.distance ? this.state.distance.distance.text : ''}`} |
             {`Duration: ${this.state.distance ? this.state.distance.duration.text : ''}`} |
             {`Fair: ${this.state.distance ? this.state.distance.distance.value / 100 * 10 : ''}`}
@@ -188,7 +210,7 @@ class Home extends Component {
           }} />
         <GoogleMapsContainer myLoc={this.state.myLoc} onChangeSource={(cab, source) => this.onChangeSource(cab, source)}
           onChangeDestination={(destinationAddress, distance) => this.onChangeDestination(destinationAddress, distance)}
-          cabs={this.state.cabs} />
+          cabs={this.state.cabs} bookedCab={this.state.bookedCab}/>
       </Wrapper>
     )
   }

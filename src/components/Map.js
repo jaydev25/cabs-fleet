@@ -22,13 +22,16 @@ class GoogleMapsContainer extends React.Component {
         assignedCabIndex: null,
         startAddress: '',
         destination: null,
-        rideDistance: null
+        rideDistance: null,
+        bookedCab: null,
+        icon: null
     }
     constructor(props) {
         super(props);
         // binding this to event-handler functions
         this.onMarkerClick = this.onMarkerClick.bind(this);
         this.onMapClick = this.onMapClick.bind(this);
+        this.setIconSize = this.setIconSize.bind(this);
     }
     onMarkerClick = (props, marker, e) => {
         this.refs['Inf' + marker.title].infowindow.open(props.map, marker);
@@ -130,9 +133,16 @@ class GoogleMapsContainer extends React.Component {
         cabs.forEach((cab) => {
             cab.icon = this.state.icon;
         });
-        this.setState({
-            cabs: props.cabs
-        });
+        if (props.cabs) {
+            this.setState({
+                cabs: props.cabs,
+            });
+        }
+        if (props.bookedCab) {
+            this.setState({
+                bookedCab: props.bookedCab,
+            });
+        }
 
     }
     removeMarkers() {
@@ -145,9 +155,11 @@ class GoogleMapsContainer extends React.Component {
             url: "cab.png", // url
             scaledSize: new google.maps.Size(20, 20), // scaled size
             origin: new google.maps.Point(0, 0), // origin
-            anchor: new google.maps.Point(0, 0) // anchor
+            anchor: new google.maps.Point(0, 0),
+            scaeSiazeFunc: new google.maps.Size // function to sacle size
         };
-
+        console.log('................................', new google.maps.Size(20, 20));
+        
         const cabs = this.props.cabs;
         cabs.forEach((cab) => {
             cab.icon = icon;
@@ -156,6 +168,10 @@ class GoogleMapsContainer extends React.Component {
             cabs: cabs,
             icon: icon
         });
+    }
+
+    setIconSize () {
+        return this.state.icon.scaeSiazeFunc(10,10);
     }
 
     render() {
@@ -220,6 +236,25 @@ class GoogleMapsContainer extends React.Component {
                             );
                         })
 
+                    }
+                    {
+                        this.state.bookedCab ?
+                            <Marker
+                                key={this.state.bookedCab.id}
+                                onClick={this.state.onMarkerClick}
+                                ref={this.state.bookedCab.id}
+                                title={this.state.bookedCab.id}
+                                position={this.state.bookedCab.location}
+                                name={'Changing Colors Garage'}
+                                options={{
+                                    icon: {
+                                        url: "red_cab.png",
+                                        scaledSize: {width: 17, height: 17},
+                                        origin: this.state.bookedCab.origin,
+                                        anchor: this.state.bookedCab.anchor
+                                    }
+                                }}
+                            /> : ''
                     }
                 </Map>
             </Wrapper>
