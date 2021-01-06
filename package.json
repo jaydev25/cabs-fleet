@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://itsmichaeldiego.github.io/google-map-react-examples/",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "axios-observable": "^1.1.3",
     "can-use-dom": "^0.1.0",
     "google-map-react": "^1.0.0",
